@@ -37,7 +37,7 @@ class Cell(object):
         if not self._node.predefined_jitter:
             self._node.jitter = self._default_jitter
 
-        self._lgn_cell_obj = model_processing_fnc(self, self._node.model_template, self._node.dynamics_params)
+        self._lgn_cell_obj = model_processing_fnc(self)
 
     def get(self, item, default):
         if item in self._node:

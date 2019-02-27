@@ -145,11 +145,12 @@ class GratingMovie(Movie):
         self.col_size = col_size                        #in degrees
         self.frame_rate = float(frame_rate)             #in Hz
 
-    def create_movie(self, t_min = 0, t_max = 1, gray_screen_dur = 0, cpd = 0.05, temporal_f = 4, theta = 45, phase = 0., contrast = 1.0, row_size_new = None, col_size_new = None):
+    def create_movie(self, t_min = 0, t_max = 1, gray_screen_dur = 0, grating_duration = 1., cpd = 0.05, temporal_f = 4, theta = 45, phase = 0., contrast = 1.0, row_size_new = None, col_size_new = None):
         """Create the grating movie with the desired parameters
         :param t_min: start time in seconds
         :param t_max: end time in seconds
-        :param gray_screen_dur: Duration of gray screen before grating stimulus starts
+        :param gray_screen_dur: Duration of gray screen before grating stimulus starts in seconds
+        :param grating_duration: Duration of grating stimulus in seconds
         :param cpd: cycles per degree
         :param temporal_f: in Hz
         :param theta: orientation angle
@@ -161,7 +162,8 @@ class GratingMovie(Movie):
         physical_spacing = 1. / (float(cpd) * 10)    #To make sure no aliasing occurs
         self.row_range = np.linspace(0, self.row_size, self.row_size / physical_spacing, endpoint = True)
         self.col_range = np.linspace(0, self.col_size, self.col_size / physical_spacing, endpoint = True)
-        numberFramesNeeded = int(round(self.frame_rate * (t_max - gray_screen_dur))) + 1
+        #numberFramesNeeded = int(round(self.frame_rate * (t_max - gray_screen_dur))) + 1
+        numberFramesNeeded = int(round(self.frame_rate * grating_duration)) + 1
         time_range = np.linspace(gray_screen_dur, t_max - gray_screen_dur, numberFramesNeeded, endpoint=True)
 
         tt, yy, xx = np.meshgrid(time_range, self.row_range, self.col_range, indexing='ij')
@@ -180,12 +182,18 @@ class GratingMovie(Movie):
             # just adding one or two seconds to gray screen so flash never "happens"
             m_gray = FullFieldFlashMovie(self.row_range, self.col_range, gray_screen_dur + 1, gray_screen_dur + 2,
                                          frame_rate=self.frame_rate).full(t_max=gray_screen_dur)
-            mov = m_gray + Movie(data, row_range=self.row_range, col_range=self.col_range, labels=('time', 'y', 'x'),
-                                 units=('second', 'pixel', 'pixel'), frame_rate=self.frame_rate)
         else:
-            mov = Movie(data, row_range=self.row_range, col_range=self.col_range, labels=('time', 'y', 'x'),
-                        units=('second', 'pixel', 'pixel'), frame_rate=self.frame_rate)
-
+            m_gray = None
+        # construct grating movie
+        mov = m_gray + Movie(data, row_range=self.row_range, col_range=self.col_range, labels=('time', 'y', 'x'),
+                             units=('second', 'pixel', 'pixel'), frame_rate=self.frame_rate)
+        
+        if t_max > (gray_screen_dur + grating_duration):
+            # add gray screen segment until t_max
+            dur = t_max - (gray_screen_dur + grating_duration)
+            mov += FullFieldFlashMovie(self.row_range, self.col_range, dur + 1, dur + 2,
+                                       frame_rate=self.frame_rate).full(t_max=t_max - (gray_screen_dur + grating_duration))
+        
         return mov
 
 

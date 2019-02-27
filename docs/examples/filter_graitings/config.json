@@ -27,6 +27,7 @@
       "row_size": 120,
       "col_size": 240,
       "gray_screen_dur": 0.5,
+      "grating_duration": 1.0,
       "cpd": 0.04,
       "temporal_f": 4.0,
       "contrast": 0.8,
@@ -37,7 +38,7 @@
     }
   },
 
-  "output":{ 
+  "output":{
     "log_file": "log.txt",
     "output_dir": "$OUTPUT_DIR",
     "rates_csv": "rates.csv",

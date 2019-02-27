@@ -44,12 +44,12 @@ class FilterSimulator(Simulator):
         elif movie_type == 'full_field_flash':
             raise NotImplementedError
 
-        elif movie_type == 'graiting':
+        elif movie_type == 'grating':
             init_params = FilterSimulator.find_params(['row_size', 'col_size', 'frame_rate'], **params)
             create_params = FilterSimulator.find_params(['gray_screen_dur', 'cpd', 'temporal_f', 'theta', 'contrast'], **params)
             gm = GratingMovie(**init_params)
-            graiting_movie = gm.create_movie(t_min=0.0, t_max=self._tstop, **create_params)
-            self._movies.append(graiting_movie)
+            grating_movie = gm.create_movie(t_min=0.0, t_max=self._tstop, **create_params)
+            self._movies.append(grating_movie)
 
         else:
             raise Exception('Unknown movie type {}'.format(movie_type))

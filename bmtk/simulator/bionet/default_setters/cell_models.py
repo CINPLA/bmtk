@@ -110,11 +110,23 @@ def fix_axon_peri(hobj):
 
     h.execute('create axon[2]', hobj)
 
+    n3d = h.n3d(sec=hobj.soma[0])
+    x0 = h.x3d(n3d // 2, sec=hobj.soma[0])
+    y0 = h.y3d(n3d // 2, sec=hobj.soma[0])
+    z0 = h.z3d(n3d // 2, sec=hobj.soma[0])
+    y0 -= (hobj.soma[0].diam / 2.)
+    L = 30.
+    diam = 1.
+
     for sec in hobj.axon:
-        sec.L = 30
-        sec.diam = 1
+        xvec = h.Vector([x0, x0])
+        yvec = h.Vector([y0, y0-L])
+        zvec = h.Vector([z0, z0])
+        dvec = h.Vector([diam, diam])
+        h.pt3dadd(xvec, yvec, zvec, dvec, sec=sec)
         hobj.axonal.append(sec=sec)
         hobj.all.append(sec=sec)  # need to remove this comment
+        y0 -= L
 
     hobj.axon[0].connect(hobj.soma[0], 0.5, 0)
     hobj.axon[1].connect(hobj.axon[0], 1, 0)
@@ -185,13 +197,23 @@ def fix_axon_allactive(hobj):
     for sec in hobj.axon:
         h.delete_section(sec=sec)
 
+    n3d = h.n3d(sec=hobj.soma[0])
+    x0 = h.x3d(n3d // 2, sec=hobj.soma[0])
+    y0 = h.y3d(n3d // 2, sec=hobj.soma[0])
+    z0 = h.z3d(n3d // 2, sec=hobj.soma[0])
+    y0 -= (hobj.soma[0].diam / 2.)
+    L = 30.
+
     h.execute('create axon[2]', hobj)
     for index, sec in enumerate(hobj.axon):
-        sec.L = 30
-        sec.diam = axon_diams[index]  # 1
-
+        xvec = h.Vector([x0, x0])
+        yvec = h.Vector([y0, y0-L])
+        zvec = h.Vector([z0, z0])
+        dvec = h.Vector([axon_diams[index], axon_diams[index]])
+        h.pt3dadd(xvec, yvec, zvec, dvec, sec=sec)
         hobj.axonal.append(sec=sec)
         hobj.all.append(sec=sec)  # need to remove this comment
+        y0 -= L
 
     hobj.axon[0].connect(hobj.soma[0], 1.0, 0)
     hobj.axon[1].connect(hobj.axon[0], 1.0, 0)

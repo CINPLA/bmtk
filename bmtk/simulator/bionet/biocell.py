@@ -156,13 +156,19 @@ class BioCell(Cell):
         else:
             return self._set_connections(edge_prop, src_node, syn_weight, stim)
 
-    def _set_connection_preselected(self, edge_prop, src_node, syn_weight, stim=None):
+    def _set_connection_preselected(self, edge_prop, src_node, syn_weight, stim=None,
+                                    mindelay=0.3, sigma=0.5):
         # TODO: synapses should be loaded by edge_prop.load_synapse
         sec_x = edge_prop['sec_x']
         sec_id = edge_prop['sec_id']
         section = self._secs_by_id[sec_id]
         # section = self._secs[sec_id]
         delay = edge_prop['delay']
+        # pick delay from lognormal distribution with mean delay
+        # delay_mean = exp(mu + sigma**2/2)
+        # --> mu = log(delay_mean) - sigma**2/2
+        while delay < mindelay:
+            delay = np.random.lognormal(np.log(delay) - sigma**2 / 2, sigma)
         synapse_fnc = nrn.py_modules.synapse_model(edge_prop['model_template'])
         syn = synapse_fnc(edge_prop['dynamics_params'], sec_x, section)
 
@@ -181,7 +187,8 @@ class BioCell(Cell):
 
         return 1
 
-    def _set_connections(self, edge_prop, src_node, syn_weight, stim=None):
+    def _set_connections(self, edge_prop, src_node, syn_weight, stim=None,
+                         mindelay=0.3, sigma=0.5):
         tar_seg_ix, tar_seg_prob = self._morph.get_target_segments(edge_prop)
         src_gid = src_node.node_id
         nsyns = edge_prop.nsyns
@@ -195,6 +202,12 @@ class BioCell(Cell):
         synapses = [edge_prop.load_synapses(x, sec) for x, sec in zip(xs, secs)]
 
         delay = edge_prop['delay']
+        # pick delay from lognormal distribution with mean delay
+        # delay_mean = exp(mu + sigma**2/2)
+        # --> mu = log(delay_mean) - sigma**2/2
+        while delay < mindelay:
+            delay = np.random.lognormal(np.log(delay) - sigma**2 / 2, sigma)
+        
         self._synapses.extend(synapses)
 
         # TODO: Don't save this if not needed
